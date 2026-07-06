@@ -1231,6 +1231,46 @@ Future<bool> openCarPlayNowPlaying() =>
 
 Repeated calls do not push duplicate shared instances. A `false` result can mean it is already in the stack, not only an error. The method does not create a player or start playback.
 
+##### Custom Now Playing buttons
+
+`FlutterCarplay.setNowPlayingButtons()` adds buttons to the shared Now Playing screen. CarPlay shows at most 5, arranged in list order from the leading edge to the trailing edge, and ignores the rest.
+
+| Button type | Description |
+|------------|-------------|
+| `CPNowPlayingShuffleButton` | Reports a tap so the app can toggle shuffle mode |
+| `CPNowPlayingRepeatButton` | Reports a tap so the app can change the repeat mode |
+| `CPNowPlayingPlaybackRateButton` | Reports a tap so the app can change the playback rate |
+| `CPNowPlayingAddToLibraryButton` | Reports a tap so the app can add the current item to the library |
+| `CPNowPlayingMoreButton` | Reports a tap so the app can show more options |
+| `CPNowPlayingImageButton` | Custom image button with callback |
+
+<details>
+<summary>Shuffle, repeat and a custom image button</summary>
+
+```dart
+import 'package:flutter_carplay/flutter_carplay.dart';
+
+Future<bool> configureNowPlayingButtons() =>
+    FlutterCarplay.setNowPlayingButtons([
+      CPNowPlayingShuffleButton(onPress: () {
+        // Toggle shuffle.
+      }),
+      CPNowPlayingRepeatButton(onPress: () {
+        // Change the repeat mode.
+      }),
+      CPNowPlayingImageButton(
+        image: 'sfsymbol:heart', // Asset, file://, or sfsymbol: source
+        onPress: () {
+          // Toggle favorite.
+        },
+      ),
+    ]);
+```
+
+</details>
+
+For image buttons, use simple single color template images.
+
 ### Android Auto templates
 
 These models map to the Android for Cars App Library, with host/category restrictions and Android-specific behavior. Native tabs support list/grid content; pane and message templates are standalone screens, not tab children in this package.
