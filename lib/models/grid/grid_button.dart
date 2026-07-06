@@ -25,6 +25,7 @@ class CPGridButton {
   ///   the native side; remote/`file://` SVGs are not supported)
   /// - **File path**: `file:///path/to/image.png` (local file on device)
   /// - **Network URL**: `https://example.com/image.png` (remote image)
+  /// - **SF Symbol**: `sfsymbol:heart.fill` (iOS system symbol by name)
   ///
   /// **[!] When creating a grid button, do NOT provide an animated image. If you do, the button
   /// uses the first image in the animation sequence.**

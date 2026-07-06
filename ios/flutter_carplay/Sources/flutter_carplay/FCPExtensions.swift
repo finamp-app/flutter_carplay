@@ -69,6 +69,7 @@ enum ImageSource {
   case url(URL)
   case file(String)
   case flutterAsset(String)
+  case systemName(String)
 }
 
 // String → ImageSource
@@ -79,6 +80,8 @@ extension String {
     } else if self.starts(with: "file://") {
       // File URIs arrive percent-encoded, decode before use as a filesystem path
       return .file(URL(string: self)?.path ?? self.replacingOccurrences(of: "file://", with: ""))
+    } else if self.starts(with: "sfsymbol:") {
+      return .systemName(String(self.dropFirst("sfsymbol:".count)))
     } else {
       return .flutterAsset(self)
     }
@@ -102,6 +105,23 @@ func makeUIPlaceholder() -> UIImage {
     UIColor.clear.setFill()
     UIRectFill(CGRect(origin: .zero, size: size))
   }
+}
+
+// An optional @RRGGBB suffix tints the symbol, rendered as original to keep the colour
+@available(iOS 14.0, *)
+func makeSystemImage(named name: String, errorCallback: ((Error) -> Void)? = nil) -> UIImage {
+  let parts = name.split(separator: "@", maxSplits: 1, omittingEmptySubsequences: false)
+  if let symbolName = parts.first, let image = UIImage(systemName: String(symbolName)) {
+    if parts.count == 2, let tint = UIColor(fcpHex: String(parts[1])) {
+      return image.withTintColor(tint, renderingMode: .alwaysOriginal)
+    }
+    return image
+  }
+  errorCallback?(
+    NSError(
+      domain: "ImageLoadError", code: 5,
+      userInfo: [NSLocalizedDescriptionKey: "SF Symbol not found: \(name)"]))
+  return UIImage(systemName: "questionmark") ?? makeUIPlaceholder()
 }
 
 // UIImage creation (MAIN THREAD ONLY)
@@ -149,6 +169,9 @@ func makeUIImage(
           userInfo: [NSLocalizedDescriptionKey: "Failed to decode image at path: \(path)"])
       }
       return image
+
+    case .systemName(let name):
+      return makeSystemImage(named: name, errorCallback: errorCallback)
     }
   } catch {
     errorCallback?(error)
@@ -224,6 +247,11 @@ func loadUIImageAsync(
         errorCallback?(error)
         completion(makeUIPlaceholder())
       }
+    }
+
+  case .systemName(let name):
+    DispatchQueue.main.async {
+      completion(makeSystemImage(named: name, errorCallback: errorCallback))
     }
   }
 }
