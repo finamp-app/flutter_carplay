@@ -27,6 +27,16 @@ class FlutterCarplay {
   /// Current CarPlay and mobile app connection status.
   static String _connectionStatus = ConnectionStatusTypes.unknown.name;
 
+  /// Current now playing buttons configured on the Now Playing screen.
+  static List<CPNowPlayingButton> _nowPlayingButtons = [];
+
+  /// Press callbacks of the latest button list, by position.
+  static List<Function()?> _nowPlayingButtonCallbacks = [];
+
+  /// Configuration signature of the last button list sent to the native side,
+  /// used to skip redundant updates that would cause visible re-rendering.
+  static String? _lastSentNowPlayingButtonConfig;
+
   /// The size (in logical pixels, square) used when rasterizing Flutter asset
   /// SVGs referenced by image fields (e.g. `CPListItem.image`,
   /// `CPGridButton.image`, `CPPoi.image`) before they are sent to the native
@@ -73,6 +83,11 @@ class FlutterCarplay {
           _carPlayController.processFCPListImageRowItemElementSelectedChannel(
             event['data']['elementId'],
             event['data']['index'],
+          );
+          break;
+        case FCPChannelTypes.onNowPlayingButtonPressed:
+          _processFCPNowPlayingButtonPressed(
+            event['data']['elementId'],
           );
           break;
         case FCPChannelTypes.onFCPAlertActionPressed:
@@ -451,5 +466,88 @@ class FlutterCarplay {
       animated,
     );
     return isCompleted ?? false;
+  }
+
+  /// Sets custom buttons on the Now Playing screen.
+  ///
+  /// The Now Playing screen supports various button types:
+  /// - [CPNowPlayingRepeatButton] - Reports a tap so the app can change the repeat mode
+  /// - [CPNowPlayingShuffleButton] - Reports a tap so the app can toggle shuffle mode
+  /// - [CPNowPlayingPlaybackRateButton] - Reports a tap so the app can change the playback rate
+  /// - [CPNowPlayingAddToLibraryButton] - Reports a tap so the app can add the current item to the library
+  /// - [CPNowPlayingMoreButton] - Reports a tap so the app can show more options
+  /// - [CPNowPlayingImageButton] - Custom image button with callback
+  ///
+  /// **[!] CarPlay supports a maximum of 5 playback control buttons on the
+  /// Now Playing screen. Buttons are arranged in the array's order, from the
+  /// leading edge of the CarPlay screen to the trailing edge. Any buttons
+  /// beyond the first 5 are ignored.**
+  ///
+  /// Setting the same button configuration (types, images and order) twice in
+  /// a row is a no-op: CarPlay re-renders the button row on every update, so
+  /// redundant updates would cause visible flicker. A skipped update still
+  /// adopts the new press callbacks, so a rebuilt list never leaves a stale
+  /// callback bound.
+  ///
+  /// Example:
+  /// ```dart
+  /// FlutterCarplay.setNowPlayingButtons([
+  ///   CPNowPlayingShuffleButton(onPress: () => print('Shuffle toggled')),
+  ///   CPNowPlayingRepeatButton(onPress: () => print('Repeat mode changed')),
+  /// ]);
+  /// ```
+  static Future<bool> setNowPlayingButtons(
+    List<CPNowPlayingButton> buttons,
+  ) async {
+    if (buttons.length > 5) {
+      buttons = buttons.sublist(0, 5);
+    }
+    // Element ids are regenerated per construction so they stay out of the signature
+    final String config = buttons
+        .map((b) => (b.toJson()..remove('_elementId')).toString())
+        .join(';');
+    _nowPlayingButtonCallbacks = buttons.map((b) => b.onPress).toList();
+    if (config == _lastSentNowPlayingButtonConfig) {
+      return true;
+    }
+    final bool? isCompleted =
+        await FlutterCarPlayController.flutterToNativeModule(
+      FCPChannelTypes.setNowPlayingButtons,
+      <String, dynamic>{
+        'buttons': buttons.map((b) => b.toJson()).toList(),
+      },
+    );
+    if (isCompleted == true) {
+      _nowPlayingButtons = buttons;
+      _lastSentNowPlayingButtonConfig = config;
+    }
+    return isCompleted ?? false;
+  }
+
+  /// Updates the shuffle state shown by [CPNowPlayingShuffleButton].
+  ///
+  /// CarPlay renders the shuffle button's on/off appearance from
+  /// `MPRemoteCommandCenter.changeShuffleModeCommand`, not from the button's
+  /// press handler. Call this whenever your app's shuffle mode changes (and
+  /// once when configuring the buttons) so the button reflects the current
+  /// state.
+  static Future<bool> updateNowPlayingShuffleState({
+    required bool isShuffled,
+  }) async {
+    final bool? isCompleted =
+        await FlutterCarPlayController.flutterToNativeModule(
+      FCPChannelTypes.updateNowPlayingShuffleState,
+      isShuffled,
+    );
+    return isCompleted ?? false;
+  }
+
+  /// Processes a Now Playing button press event from the native side.
+  static void _processFCPNowPlayingButtonPressed(String elementId) {
+    final int index =
+        _nowPlayingButtons.indexWhere((b) => b.uniqueId == elementId);
+    if (index >= 0 && index < _nowPlayingButtonCallbacks.length) {
+      _nowPlayingButtonCallbacks[index]?.call();
+    }
   }
 }

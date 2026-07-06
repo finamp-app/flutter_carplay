@@ -1225,6 +1225,56 @@ FlutterCarplay.showSharedNowPlaying(animated: true);
 
 > **Multiple Calls Safe**: The `showSharedNowPlaying()` method can be called multiple times safely without causing issues.
 
+#### Custom Now Playing Buttons
+
+You can add custom buttons to the Now Playing screen to provide additional controls like shuffle, repeat, playback rate, and custom actions.
+
+**Available Button Types:**
+
+| Button Type | Description |
+|------------|-------------|
+| `CPNowPlayingShuffleButton` | Reports a tap so the app can toggle shuffle mode |
+| `CPNowPlayingRepeatButton` | Reports a tap so the app can change the repeat mode |
+| `CPNowPlayingPlaybackRateButton` | Reports a tap so the app can change the playback rate |
+| `CPNowPlayingAddToLibraryButton` | Reports a tap so the app can add the current item to the library |
+| `CPNowPlayingMoreButton` | Reports a tap so the app can show more options |
+| `CPNowPlayingImageButton` | Custom image button with callback |
+
+**Example: Configure shuffle and repeat buttons:**
+
+```dart
+FlutterCarplay.setNowPlayingButtons([
+  CPNowPlayingShuffleButton(
+    onPress: () {
+      print('Shuffle toggled');
+      // Handle shuffle state change
+    },
+  ),
+  CPNowPlayingRepeatButton(
+    onPress: () {
+      print('Repeat mode changed');
+      // Handle repeat mode change
+    },
+  ),
+]);
+```
+
+**Example: Custom image button (like/favorite):**
+
+```dart
+FlutterCarplay.setNowPlayingButtons([
+  CPNowPlayingImageButton(
+    image: 'images/heart.png', // Asset, file://, or sfsymbol: source
+    onPress: () {
+      print('Favorite button pressed');
+      // Handle favorite action
+    },
+  ),
+]);
+```
+
+> **Note**: CarPlay supports a maximum of 5 playback control buttons on the Now Playing screen, arranged in array order from the leading edge to the trailing edge. For image buttons, use simple, single color template images for best results.
+
 ## Android Auto Templates
 
 Android Auto templates are built using the [Android for Cars App Library](https://developer.android.com/training/cars/apps). Each template is vehicle-optimized and rendered by the host application on the car screen.
