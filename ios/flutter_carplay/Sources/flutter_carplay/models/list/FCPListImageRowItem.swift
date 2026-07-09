@@ -61,6 +61,8 @@ final class FCPListImageRowItem {
 
   private func handler(selectedItem: CPSelectableListItem, complete: @escaping () -> Void) {
     if isOnPressListenerActive {
+      // A pending selection must complete before a second tap can replace it
+      completeHandler?()
       completeHandler = complete
 
       DispatchQueue.main.async {
@@ -78,6 +80,8 @@ final class FCPListImageRowItem {
     selectedItem: CPSelectableListItem, index: Int, complete: @escaping () -> Void
   ) {
     if isOnItemPressListenerActive {
+      // A pending selection must complete before a second tap can replace it
+      completeItemHandler?()
       completeItemHandler = complete
 
       DispatchQueue.main.async {
@@ -160,9 +164,8 @@ final class FCPListImageRowItem {
       }
     }
 
-    if isOnPressListenerActive {
-      listImageRowItem.handler = self.handler
-    }
+    // CarPlay rows are always selectable, so taps without a Dart callback must still complete
+    listImageRowItem.handler = self.handler
     if isOnItemPressListenerActive {
       listImageRowItem.listImageRowHandler = self.listImageRowHandler
     }

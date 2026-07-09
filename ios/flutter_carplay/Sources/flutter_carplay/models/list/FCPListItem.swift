@@ -48,6 +48,8 @@ final class FCPListItem {
 
   private func handler(selectedItem: CPSelectableListItem, complete: @escaping () -> Void) {
     if isOnPressListenerActive {
+      // A pending selection must complete before a second tap can replace it
+      completeHandler?()
       completeHandler = complete
 
       DispatchQueue.main.async {
