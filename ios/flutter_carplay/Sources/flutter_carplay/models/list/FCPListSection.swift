@@ -50,6 +50,35 @@ class FCPListSection {
     return listSection
   }
 
+  /// Reuses native items whose id and content are unchanged so loaded images survive updates
+  func reuseItems(from existing: inout [String: FCPListTemplateItem]) {
+    objcItems = objcItems.map { new in
+      guard let old = existing[new.elementId] else { return new }
+      if let newItem = new as? FCPListItem, let oldItem = old as? FCPListItem,
+        newItem.contentMatches(oldItem)
+      {
+        existing.removeValue(forKey: new.elementId)
+        return oldItem
+      }
+      if let newRow = new as? FCPListImageRowItem, let oldRow = old as? FCPListImageRowItem,
+        newRow.contentMatches(oldRow)
+      {
+        existing.removeValue(forKey: new.elementId)
+        return oldRow
+      }
+      return new
+    }
+    items = objcItems.map { item in
+      if let listItem = item as? FCPListItem, let native = listItem._super {
+        return native
+      }
+      if let rowItem = item as? FCPListImageRowItem, let native = rowItem._super {
+        return native
+      }
+      return item.get
+    }
+  }
+
   public func getFCPListTemplateItems() -> [FCPListTemplateItem] {
     return objcItems
   }
