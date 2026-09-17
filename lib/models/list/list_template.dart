@@ -34,6 +34,10 @@ class CPListTemplate extends CPTemplate {
   /// iOS 12.0+ | iPadOS 12.0+ | Mac Catalyst 13.1+
   final CPBarButton? backButton;
 
+  /// Buttons to display on the trailing side of the navigation bar.
+  /// iOS 14.0+ | iPadOS 14.0+ | Mac Catalyst 14.0+
+  final List<CPBarButton>? trailingNavigationBarButtons;
+
   /// Creates [CPListTemplate] to display a list of items, grouped into one or more sections.
   /// Each section contains an array of list items — objects that is [CPListItem]
   ///
@@ -48,6 +52,7 @@ class CPListTemplate extends CPTemplate {
     super.systemIcon,
     super.onPop,
     this.backButton,
+    this.trailingNavigationBarButtons,
     String? id,
   }) : _elementId = id ?? const Uuid().v4();
 
@@ -62,6 +67,8 @@ class CPListTemplate extends CPTemplate {
         'showsTabBadge': showsTabBadge,
         'systemIcon': systemIcon,
         'backButton': backButton?.toJson(),
+        'trailingNavigationBarButtons':
+            trailingNavigationBarButtons?.map((e) => e.toJson()).toList(),
         'runtimeType': 'FCPListTemplate',
       };
 

@@ -343,14 +343,16 @@ public class SwiftFlutterCarplayPlugin: NSObject, FlutterPlugin {
       }
       let template = FCPSharedNowPlayingTemplate()
 
-      let isCompleted = FlutterCarPlaySceneDelegate.pushIfNotExist(
-        template: template.get as CPTemplate, animated: animated)
-      if isCompleted {
-        SwiftFlutterCarplayPlugin.templateStack.append(template)
-        result(true)
-      } else {
-        result(false)
-      }
+      FlutterCarPlaySceneDelegate.pushIfNotExist(
+        template: template.get as CPTemplate, animated: animated,
+        onPush: { completed in
+          guard completed else {
+            result(false)
+            return
+          }
+          SwiftFlutterCarplayPlugin.templateStack.append(template)
+          result(true)
+        })
       break
     case FCPChannelTypes.setNowPlayingButtons:
       guard let args = call.arguments as? [String: Any],
@@ -405,14 +407,17 @@ public class SwiftFlutterCarplayPlugin: NSObject, FlutterPlugin {
         return
       }
 
-      let isCompleted = FlutterCarPlaySceneDelegate.push(
-        template: template!.get, animated: animated)
-      if isCompleted {
-        SwiftFlutterCarplayPlugin.templateStack.append(template!)
-        result(true)
-      } else {
-        result(false)
-      }
+      let pushedTemplate = template!
+      FlutterCarPlaySceneDelegate.push(
+        template: pushedTemplate.get, animated: animated,
+        onPush: { completed in
+          guard completed else {
+            result(false)
+            return
+          }
+          SwiftFlutterCarplayPlugin.templateStack.append(pushedTemplate)
+          result(true)
+        })
       break
     case FCPChannelTypes.updateSearchResults:
       guard let args = call.arguments as? [String : Any] else {

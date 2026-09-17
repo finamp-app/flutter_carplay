@@ -118,26 +118,48 @@ class FlutterCarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelega
     self.interfaceController?.popToRootTemplate(animated: animated)
   }
 
-  static public func push(template: CPTemplate, animated: Bool) -> Bool {
-    guard let interfaceController = self.interfaceController else { return false }
-    guard interfaceController.rootTemplate != nil else { return false }
+  static public func push(
+    template: CPTemplate, animated: Bool,
+    onPush: @escaping (_ completed: Bool) -> Void
+  ) {
+    guard let interfaceController = self.interfaceController,
+      interfaceController.rootTemplate != nil
+    else {
+      onPush(false)
+      return
+    }
 
-    interfaceController.pushTemplate(template, animated: animated)
-    return true
+    interfaceController.pushTemplate(
+      template, animated: animated,
+      completion: { completed, error in
+        if error != nil {
+          onPush(false)
+          return
+        }
+        onPush(completed)
+      })
   }
 
-  static public func pushIfNotExist(template: CPTemplate, animated: Bool) -> Bool {
-    guard let interfaceController = self.interfaceController else { return false }
-    guard interfaceController.rootTemplate != nil else { return false }
+  static public func pushIfNotExist(
+    template: CPTemplate, animated: Bool,
+    onPush: @escaping (_ completed: Bool) -> Void
+  ) {
+    guard let interfaceController = self.interfaceController,
+      interfaceController.rootTemplate != nil
+    else {
+      onPush(false)
+      return
+    }
 
     let isAlreadyPushed = interfaceController.templates.contains { $0 === template }
     let isTopSameInstance = interfaceController.topTemplate === template
 
-    if !isAlreadyPushed && !isTopSameInstance {
-      interfaceController.pushTemplate(template, animated: animated)
-      return true
+    guard !isAlreadyPushed, !isTopSameInstance else {
+      onPush(false)
+      return
     }
-    return false
+
+    push(template: template, animated: animated, onPush: onPush)
   }
 
   func templateDidDisappear(_ template: CPTemplate, animated: Bool) {

@@ -600,6 +600,10 @@ Pane rows are informational on Android and cannot be tapped. Use pane actions fo
 
 Flutter asset SVGs can be used in image fields such as `CPListItem.image`, `CPGridButton.image`, `CPPointOfInterest.image`, `CPListImageRowItem` image collections, `AAListItem.imageUrl`, and `AAPaneTemplate` image fields. The package rasterizes local `.svg` assets to PNG bytes before sending them to the native CarPlay or Android Auto layer. Remote SVG URLs and `file://` SVGs are not rasterized.
 
+### SF Symbol Images
+
+Image fields on list items, image rows, grid buttons and Now Playing image buttons also take an SF Symbol name with the `sfsymbol:` prefix, such as `sfsymbol:heart.fill`. An optional `@RRGGBB` suffix tints the symbol, such as `sfsymbol:heart.fill@FF0000`. A name that does not resolve falls back to the `questionmark` symbol.
+
 ### Basic Usage for Car Play
 
 - Import the all classes that you need from just one file:
@@ -1076,6 +1080,10 @@ FlutterCarplay.setRootTemplate(rootTemplate: listTemplate, animated: true);
 // You need to call _flutterCarplay.forceUpdateRootTemplate(); after setting the root template
 ```
 
+`CPListSection` takes a `sectionIndexTitle` that is independent of its visible `header`. Set it so a section appears in the side index scrubber and its full screen letter picker without a header row.
+
+`CPListTemplate` takes `trailingNavigationBarButtons`, a list of `CPBarButton` shown on the trailing edge of the navigation bar. The plugin sets the buttons when it builds the template. A later list update does not change them.
+
 ### Information Template
 
 ![Flutter CarPlay](https://raw.githubusercontent.com/oguzhnatly/flutter_carplay/master/previews/information_template.png)
@@ -1272,6 +1280,8 @@ FlutterCarplay.setNowPlayingButtons([
   ),
 ]);
 ```
+
+> **Shuffle State**: CarPlay draws the shuffle button from `MPRemoteCommandCenter.changeShuffleModeCommand`, not from the button handler. Call `FlutterCarplay.updateNowPlayingShuffleState(isShuffled: true)` each time your shuffle mode changes so the button matches it.
 
 > **Note**: CarPlay supports a maximum of 5 playback control buttons on the Now Playing screen, arranged in array order from the leading edge to the trailing edge. For image buttons, use simple, single color template images for best results.
 

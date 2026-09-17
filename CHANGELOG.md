@@ -1,3 +1,18 @@
+## Unreleased
+
+- Decode percent-encoded `file://` image paths before loading them.
+- Accept SF Symbol image sources with the `sfsymbol:` prefix on list items, image rows, grid buttons and Now Playing image buttons.
+- Support an optional `@RRGGBB` tint suffix on `sfsymbol:` image sources.
+- Add custom Now Playing buttons with `FlutterCarplay.setNowPlayingButtons` (#86).
+- Cap the Now Playing button list at 5 and skip an update that repeats the last configuration.
+- Add `FlutterCarplay.updateNowPlayingShuffleState` so the shuffle button matches the app state.
+- Complete a pending list item or image row selection before a second tap replaces it.
+- Complete image row taps that have no Dart `onPress` handler.
+- Add `CPListSection.sectionIndexTitle` for a side index entry without a header row.
+- Reuse native list items across `updateSections` so loaded artwork does not flash.
+- Report a refused `FlutterCarplay.push` as false and keep the template off the template stack. `push` now resolves after CarPlay finishes the transition.
+- Add `CPListTemplate.trailingNavigationBarButtons` for actions in the navigation bar.
+
 ## 1.6.5 - 2026-08-21
 
 - Fix Android Auto list template startup by validating selectable lists before they reach the host (#120) (ty @JulianBissekkou)
