@@ -435,6 +435,12 @@ class FlutterCarPlayController {
           list.backButton?.onPress();
           return;
         }
+        for (CPBarButton button in list.trailingNavigationBarButtons ?? []) {
+          if (button.uniqueId == elementId) {
+            button.onPress();
+            return;
+          }
+        }
       }
     }
   }

@@ -28,7 +28,8 @@ class FCPBarButton {
   var get: CPBarButton {
     let barButton = CPBarButton.init(
       title: title,
-      handler: { _ in
+      handler: { [weak self] _ in
+        guard let self = self else { return }
         DispatchQueue.main.async {
           FCPStreamHandlerPlugin.sendEvent(
             type: FCPChannelTypes.onBarButtonPressed, data: ["elementId": self.elementId])

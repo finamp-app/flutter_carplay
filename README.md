@@ -677,6 +677,8 @@ Supported SVG payloads include row images and trailing images, CarPlay grid butt
 
 `AutoImageTint` supports `platform`, `primary`, `secondary`, named colors, and custom light/dark colors. Use it for glyphs rather than multicolored artwork. CarPlay pre-renders tinted images; Android uses native `CarColor` metadata, so the host still controls appearance. `selectedSafe` controls the CarPlay contrast treatment; it is not a guarantee of identical selected colors on both platforms.
 
+CarPlay image fields on list items, image rows, grid buttons and Now Playing image buttons also take an SF Symbol name with the `sfsymbol:` prefix, such as `sfsymbol:heart.fill`. An optional `@RRGGBB` suffix tints the symbol, such as `sfsymbol:heart.fill@FF0000`. A name that does not resolve falls back to the `questionmark` symbol.
+
 <details>
 <summary>Complete asset and tint example</summary>
 
@@ -734,6 +736,10 @@ Start with the catalogue below, then build the platform-specific tree your app c
 Use `CPListTemplate` for rows organized into `CPListSection`s. Rows can carry detail text, artwork, an accessory/disclosure indicator, playback progress, and playing status. `sectionIndexEnabled` controls whether a section header participates in the index. Empty-title and subtitle variants provide a useful screen when no sections are present.
 
 The vehicle can reduce how many rows are shown, including a 12-item limit on some hosts. Query `CPListTemplate.getMaximumItemCount()` and `getMaximumSectionCount()` where useful, and put essential content first. These return `Future<int?>`, not a promise that every vehicle presents your entire data set.
+
+`CPListSection` takes a `sectionIndexTitle` that is independent of its visible `header`. Set it so a section appears in the side index scrubber and its full screen letter picker without a header row.
+
+`CPListTemplate` takes `trailingNavigationBarButtons`, a list of `CPBarButton` shown on the trailing edge of the navigation bar. The plugin sets the buttons when it builds the template. A later list update does not change them.
 
 <details>
 <summary>List with an updating row and back button</summary>
@@ -1269,7 +1275,7 @@ Future<bool> configureNowPlayingButtons() =>
 
 </details>
 
-For image buttons, use simple single color template images.
+CarPlay draws the shuffle button from `MPRemoteCommandCenter.changeShuffleModeCommand`, not from the button handler. Call `FlutterCarplay.updateNowPlayingShuffleState(isShuffled:)` each time your shuffle mode changes so the button matches it. For image buttons, use simple single color template images.
 
 ### Android Auto templates
 

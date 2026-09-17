@@ -116,6 +116,14 @@ class _MyAppState extends State<MyApp> {
       CPListSection(
         items: [
           CPListItem(
+            text: 'Trailing Bar Buttons',
+            detailText: 'List template with buttons on the navigation bar',
+            onPress: (complete, self) {
+              openTrailingBarButtonsTemplate();
+              complete();
+            },
+          ),
+          CPListItem(
             text: 'Alert',
             detailText: 'Action template that the user can perform on an alert',
             onPress: (complete, self) {
@@ -1176,6 +1184,30 @@ class _MyAppState extends State<MyApp> {
                 AAListItem(title: 'Item 7'),
                 AAListItem(title: 'Item 8'),
               ],
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void openTrailingBarButtonsTemplate() {
+    if (Platform.isIOS) {
+      final item = CPListItem(text: 'Not tapped yet');
+      var tapCount = 0;
+      FlutterCarplay.push(
+        template: CPListTemplate(
+          title: 'Trailing Bar Buttons',
+          sections: [
+            CPListSection(items: [item]),
+          ],
+          trailingNavigationBarButtons: [
+            CPBarButton(
+              title: 'Tap Me',
+              onPress: () {
+                tapCount++;
+                item.update(text: 'Tapped $tapCount times');
+              },
             ),
           ],
         ),

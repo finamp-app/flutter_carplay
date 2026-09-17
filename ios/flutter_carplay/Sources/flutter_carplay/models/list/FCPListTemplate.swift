@@ -21,6 +21,8 @@ class FCPListTemplate {
   private var showsTabBadge: Bool = false
   private var objcBackButton: FCPBarButton?
   private var backButton: CPBarButton?
+  private var objcTrailingNavigationBarButtons: [FCPBarButton] = []
+  private var trailingNavigationBarButtons: [CPBarButton] = []
 
   init(obj: [String: Any]) {
     self.elementId = obj["_elementId"] as! String
@@ -40,6 +42,13 @@ class FCPListTemplate {
       self.objcBackButton = FCPBarButton(obj: backButtonData)
       self.backButton = self.objcBackButton!.get
     }
+    self.objcTrailingNavigationBarButtons =
+      (obj["trailingNavigationBarButtons"] as? [[String: Any]] ?? []).map {
+        FCPBarButton(obj: $0)
+      }
+    self.trailingNavigationBarButtons = self.objcTrailingNavigationBarButtons.map {
+      $0.get
+    }
   }
 
   var get: CPTemplate {
@@ -53,6 +62,9 @@ class FCPListTemplate {
     }
     if let backButton = backButton {
       listTemplate.backButton = backButton
+    }
+    if !trailingNavigationBarButtons.isEmpty {
+      listTemplate.trailingNavigationBarButtons = trailingNavigationBarButtons
     }
     listTemplate.elementId = self.elementId
     self._super = listTemplate
